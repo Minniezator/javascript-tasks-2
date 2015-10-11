@@ -1,52 +1,101 @@
 'use strict';
 
-var phoneBook; // Здесь вы храните записи как хотите
+var phoneBook = [];
+var arrayOfMaxLengths = [];
 
-/*
-   Функция добавления записи в телефонную книгу.
-   На вход может прийти что угодно, будьте осторожны.
-*/
 module.exports.add = function add(name, phone, email) {
-
-    // Ваша невероятная магия здесь
-
+    if (/^((\+)?(\d{1,4}\s)?(\d{3}|(\(\d{3}\)))\s\d{3}((-\d{1}-)|(\s\d{1}\s))\d{3})|(\d{11,14})$/.test(phone) &&
+       /^[a-zA-Z0-9_.+-]+@[a-zA-Zа-яА-Я0-9-]+(\.[a-zA-Zа-яА-Я0-9-.]+)+$/.test(email)) {
+        phoneBook.push({name: name, phone: phone, email: email});
+    }
+    //else console.log('Данные введены неверно!');
+    return null;
 };
 
-/*
-   Функция поиска записи в телефонную книгу.
-   Поиск ведется по всем полям.
-*/
 module.exports.find = function find(query) {
-
-    // Ваша удивительная магия здесь
-
+    for (var i = 0; i < phoneBook.length; ++i) {
+        for (var key in phoneBook[i]) {
+            if (phoneBook[i][key].indexOf(query) > -1) {
+                for (var key in phoneBook[i]) {
+                    process.stdout.write(phoneBook[i][key] + ', ');
+                }
+                console.log();
+                break;
+            }
+        }
+    }
+    return null;
 };
 
-/*
-   Функция удаления записи в телефонной книге.
-*/
 module.exports.remove = function remove(query) {
-
-    // Ваша необьяснимая магия здесь
-
+    var numOfRemoved = 0;
+    for (var i = 0; i < phoneBook.length; ++i) {
+        for (var key in phoneBook[i]) {
+            if (phoneBook[i][key].indexOf(query) > -1) {
+                phoneBook.splice(i, 1);
+                numOfRemoved++;
+                i--;
+                break;
+            }
+        }
+    }
+    return numOfRemoved;
 };
 
-/*
-   Функция импорта записей из файла (задача со звёздочкой!).
-*/
-module.exports.importFromCsv = function importFromCsv(filename) {
-    var data = require('fs').readFileSync(filename, 'utf-8');
+function createArrayOfMaxLengths() {
+    for (var key in phoneBook[0]) {
+        arrayOfMaxLengths[key] = phoneBook[0][key].length;
+    }
+    for (var i = 1; i < phoneBook.length; ++i) {
+        for (var key in phoneBook[i]) {
+            arrayOfMaxLengths[key] = phoneBook[i][key].length > arrayOfMaxLengths[key] ?
+                                     phoneBook[i][key].length : arrayOfMaxLengths[key];
+        }
+    }
+    var lenghtOfString = 0;
+    for (var key in arrayOfMaxLengths) {
+        lenghtOfString += arrayOfMaxLengths[key];
+    }
+    return lenghtOfString;
+}
 
-    // Ваша чёрная магия:
-    // - Разбираете записи из `data`
-    // - Добавляете каждую запись в книгу
-};
+function drawHorizontal(lengthOfString) {
+    for (var i = 0; i < lengthOfString + 4 * Object.keys(phoneBook[0]).length; ++i) {
+        process.stdout.write('─');
+    }
+    console.log();
+    return null;
+}
 
-/*
-   Функция вывода всех телефонов в виде ASCII (задача со звёздочкой!).
-*/
-module.exports.showTable = function showTable(filename) {
+function drawHeader() {
+    for (var key in phoneBook[0]) {
+        process.stdout.write('| ' + key.toLocaleUpperCase());
+        for (var j = 0; j < arrayOfMaxLengths[key] - key.length; ++j) {
+            process.stdout.write(' ');
+        }
+        process.stdout.write(' |');
+    }
+    console.log();
+    return null;
+}
 
-    // Ваша чёрная магия здесь
-
+module.exports.showTable = function showTable() {
+    if (phoneBook.length !== 0) {
+        var lengthOfString = createArrayOfMaxLengths();
+        drawHorizontal(lengthOfString);
+        drawHeader();
+        drawHorizontal(lengthOfString);
+        for (var i = 0; i < phoneBook.length; ++i) {
+            for (var key in phoneBook[i]) {
+                process.stdout.write('│ ' + phoneBook[i][key]);
+                for (var j = 0; j < arrayOfMaxLengths[key] - phoneBook[i][key].length; ++j) {
+                    process.stdout.write(' ');
+                }
+                process.stdout.write(' │');
+            }
+            console.log();
+        }
+        drawHorizontal(lengthOfString);
+    }
+    return null;
 };
