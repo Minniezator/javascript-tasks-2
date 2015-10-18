@@ -6,7 +6,7 @@ var maxLengths = [];
 module.exports.add = function add(name, phone, email) {
     var phonePattern = /^((\+)?(\d{1,4}\s)?(\d{3}|(\(\d{3}\)))\s\d{3}((-\d{1}-)|(\s\d{1}\s))\d{3})|(\d{11,14})$/;
     var emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Zа-яА-Я0-9-]+(\.[a-zA-Zа-яА-Я0-9-.]+)+$/;
-    if (phonePattern.test(phone) && emailPattern.test(email) /*&& find(name) && find(phone) && find(email)*/) {
+    if (phonePattern.test(phone) && emailPattern.test(email) /*&& !module.exports.find(name) && !module.exports.find(email) && !module.exports.find(email)*/) {
         phoneBook.push({name: name, phone: phone, email: email});
     }
     //else console.log('Данные введены неверно!');
@@ -35,21 +35,19 @@ module.exports.find = function find(query) {
 module.exports.remove = function remove(query) {
     var numOfRemoved = 0;
     for (var i = 0; i < phoneBook.length; ++i) {
-        for (var key in phoneBook[i]) {
-            if (phoneBook[i].hasOwnProperty(key)) {
-                if ((new RegExp(query, 'i')).test(phoneBook[i][key])) {
-                    phoneBook.splice(i, 1);
-                    numOfRemoved++;
-                    i--;
-                    break;
-                }
+        function removeContact(key, index, keys) {
+            if ((new RegExp(query, 'i')).test(phoneBook[i][key])) {
+                phoneBook.splice(i, 1);
+                numOfRemoved++;
+                i--;
             }
         }
+        Object.keys(phoneBook[i]).forEach(removeContact);
     }
     return numOfRemoved;
 };
 
-function createArrayOfMaxLengths() {
+function createMaxLengths() {
     for (var key in phoneBook[0]) {
         maxLengths[key] = phoneBook[0][key].length;
     }
